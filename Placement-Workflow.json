@@ -1,0 +1,219 @@
+{
+  "name": "My workflow 2",
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "simple": false,
+        "filters": {
+          "sender": "=u2203020@rajagiri.edu.in"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmailTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        -460
+      ],
+      "id": "7818cec5-a5b4-4b7e-84a5-858349f1cae7",
+      "name": "Gmail Trigger",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "jQymkwEpI0auWz1a",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        220,
+        -260
+      ],
+      "id": "654171d5-40dd-4c03-9f42-0c0145720874",
+      "name": "When chat message received",
+      "webhookId": "36dda9d6-ded7-4e56-bce4-45b7da75760e"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are an expert data extraction bot. Your task is to analyze the following text and extract key details about the placement opportunity.\n\nYou must respond ONLY with a single, valid JSON object and nothing else. Do not include any explanations, greetings, or markdown formatting like ```json.\n\nUse the following JSON structure:\n{\n  \"company_name\": \"...\",\n  \"job_role\": \"...\",\n  \"eligibility_criteria\": {\n    \"branches\": [\"...\", \"...\"],\n    \"cgpa\": \"...\",\n    \"graduation_year\": \"...\"\n  },\n  \"salary_package\": \"...\",\n  \"application_deadline\": \"YYYY-MM-DD HH:MM\",\n  \"test_or_event_date\": \"YYYY-MM-DD\",\n  \"application_link\": \"...\",\n  \"job_location\": \"...\"\n}\n\nIf any piece of information cannot be found in the text, use `null` as its value. For branches, provide a list of strings.\n\nHere is the text to analyze:\n\n {{ $json.text }}",
+        "hasOutputParser": true,
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.7,
+      "position": [
+        440,
+        -360
+      ],
+      "id": "e3e871c4-f035-498c-bc73-59c8e1c64115",
+      "name": "Basic LLM Chain"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        520,
+        -140
+      ],
+      "id": "fbb5209f-24c9-4286-9721-845a180b16a3",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "VlIZL38kPV1rFbld",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "ecfab120-956a-42e8-8879-e96d808a699b",
+              "name": "headers.from",
+              "value": "={{ $json.headers.from }}",
+              "type": "string"
+            },
+            {
+              "id": "32fb1b32-d4b2-4388-9efc-e4f75307c7f7",
+              "name": "headers.subject",
+              "value": "={{ $json.headers.subject }}",
+              "type": "string"
+            },
+            {
+              "id": "af151297-57d0-4e72-8f81-052447998b7e",
+              "name": "text",
+              "value": "={{ $json.text }}",
+              "type": "string"
+            },
+            {
+              "id": "1ff95944-df55-47ad-abcf-46e46df239ae",
+              "name": "date",
+              "value": "={{ $json.date }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        220,
+        -460
+      ],
+      "id": "14355199-1c63-4f43-adbd-0d9facadb1a8",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "calendar": {
+          "__rl": true,
+          "value": "alanjarackal@gmail.com",
+          "mode": "list",
+          "cachedResultName": "alanjarackal@gmail.com"
+        },
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.googleCalendar",
+      "typeVersion": 1.3,
+      "position": [
+        800,
+        -360
+      ],
+      "id": "70882352-9b08-469f-b8fe-b2e58edce4f2",
+      "name": "Create an event",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "kiXdFyUghgK8nOb5",
+          "name": "Google Calendar account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gmail Trigger": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain": {
+      "main": [
+        [
+          {
+            "node": "Create an event",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "a4806f23-73bf-42da-bd82-44993dd31b26",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "21460e016f8b7f31f241379a885a02b777ce2c6345f0719a583ba0765f1a98b7"
+  },
+  "id": "pRXYuxT5Bm7e1s7A",
+  "tags": []
+}
