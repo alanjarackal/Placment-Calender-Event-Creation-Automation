@@ -1,5 +1,5 @@
 {
-  "name": "My workflow 2",
+  "name": "Placement_Calender",
   "nodes": [
     {
       "parameters": {
@@ -12,7 +12,7 @@
         },
         "simple": false,
         "filters": {
-          "sender": "=u2203020@rajagiri.edu.in"
+          "sender": "=pc.rajagiri@gmail.com"
         },
         "options": {}
       },
@@ -20,7 +20,7 @@
       "typeVersion": 1.2,
       "position": [
         0,
-        -460
+        -560
       ],
       "id": "7818cec5-a5b4-4b7e-84a5-858349f1cae7",
       "name": "Gmail Trigger",
@@ -39,7 +39,7 @@
       "typeVersion": 1.1,
       "position": [
         220,
-        -260
+        -360
       ],
       "id": "654171d5-40dd-4c03-9f42-0c0145720874",
       "name": "When chat message received",
@@ -48,7 +48,7 @@
     {
       "parameters": {
         "promptType": "define",
-        "text": "=You are an expert data extraction bot. Your task is to analyze the following text and extract key details about the placement opportunity.\n\nYou must respond ONLY with a single, valid JSON object and nothing else. Do not include any explanations, greetings, or markdown formatting like ```json.\n\nUse the following JSON structure:\n{\n  \"company_name\": \"...\",\n  \"job_role\": \"...\",\n  \"eligibility_criteria\": {\n    \"branches\": [\"...\", \"...\"],\n    \"cgpa\": \"...\",\n    \"graduation_year\": \"...\"\n  },\n  \"salary_package\": \"...\",\n  \"application_deadline\": \"YYYY-MM-DD HH:MM\",\n  \"test_or_event_date\": \"YYYY-MM-DD\",\n  \"application_link\": \"...\",\n  \"job_location\": \"...\"\n}\n\nIf any piece of information cannot be found in the text, use `null` as its value. For branches, provide a list of strings.\n\nHere is the text to analyze:\n\n {{ $json.text }}",
+        "text": "=You are an expert data extraction bot. Your task is to analyze the following text and extract key details about the placement opportunity.\n\nYou must respond ONLY with a single, valid JSON object and nothing else. Do not include any explanations, greetings, or markdown formatting like ```json.\n\nUse the following JSON structure:\n{\n  \"company_name\": \"...\",\n  \"job_role\": \"...\",\n  \"eligibility_criteria\": {\n    \"branches\": [\"...\", \"...\"],\n    \"cgpa\": \"...\",\n    \"graduation_year\": \"...\"\n  },\n  \"salary_package\": \"...\",\n  \"last_date_to_register_with_time\": ,\n  \"test_or_event_date\": \"YYYY-MM-DD\",\n  \"application_link\": \"...\",\n  \"job_location\": \"...\"\n}\nProvide the date and time in the format that can be used to create a google calender event.\nIf any piece of information cannot be found in the text, use `null` as its value. For branches, provide a list of strings.\n\nHere is the text to analyze:\n\n {{ $json.text }}",
         "hasOutputParser": true,
         "batching": {}
       },
@@ -56,7 +56,7 @@
       "typeVersion": 1.7,
       "position": [
         440,
-        -360
+        -460
       ],
       "id": "e3e871c4-f035-498c-bc73-59c8e1c64115",
       "name": "Basic LLM Chain"
@@ -69,7 +69,7 @@
       "typeVersion": 1,
       "position": [
         520,
-        -140
+        -45
       ],
       "id": "fbb5209f-24c9-4286-9721-845a180b16a3",
       "name": "Google Gemini Chat Model",
@@ -116,26 +116,54 @@
       "typeVersion": 3.4,
       "position": [
         220,
-        -460
+        -560
       ],
       "id": "14355199-1c63-4f43-adbd-0d9facadb1a8",
       "name": "Edit Fields"
     },
     {
       "parameters": {
+        "jsonSchemaExample": "{\"output\":{\"company_name\":\"DeltaX\",\"job_role\":\"Associate Product Engineer\",\"eligibility_criteria\":{\"branches\":[\"AD\",\"CS\",\"CSBS\",\"IT\"],\"cgpa\":\"6.5\",\"graduation_year\":\"2026\"},\"salary_package\":\"INR 7 LPA CTC\",\"last_date_to_register_with_time\":\"2025-07-21T17:00:00\",\"test_or_event_date\":null,\"application_link\":\"https://forms.gle/e2QoZSVpma4q99DT9\",\"job_location\":\"Bangalore, Hyderabad, Pune\"}}",
+        "autoFix": true
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        560,
+        -240
+      ],
+      "id": "7a6c78b2-e4fb-4405-8c05-3f37e5ad0f08",
+      "name": "Structured Output Parser"
+    },
+    {
+      "parameters": {
         "calendar": {
           "__rl": true,
-          "value": "alanjarackal@gmail.com",
+          "value": "6044abe888dd0702ad45c86720df261531cd7747cf5a5c2f512476bb7a9906f0@group.calendar.google.com",
           "mode": "list",
-          "cachedResultName": "alanjarackal@gmail.com"
+          "cachedResultName": "Placements"
         },
-        "additionalFields": {}
+        "end": "={{ $json.output.last_date_to_register_with_time }}",
+        "useDefaultReminders": false,
+        "additionalFields": {
+          "color": "11",
+          "description": "=Above {{ $json.output.eligibility_criteria.cgpa }}\n\n{{ $json.output.salary_package }}\n{{ $json.output.application_link }}",
+          "summary": "={{ $json.output.company_name }}"
+        },
+        "remindersUi": {
+          "remindersValues": [
+            {
+              "method": "popup",
+              "minutes": 30
+            }
+          ]
+        }
       },
       "type": "n8n-nodes-base.googleCalendar",
       "typeVersion": 1.3,
       "position": [
-        800,
-        -360
+        880,
+        -460
       ],
       "id": "70882352-9b08-469f-b8fe-b2e58edce4f2",
       "name": "Create an event",
@@ -154,6 +182,11 @@
         [
           {
             "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Structured Output Parser",
             "type": "ai_languageModel",
             "index": 0
           }
@@ -203,13 +236,24 @@
           }
         ]
       ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
-  "active": false,
+  "active": true,
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "a4806f23-73bf-42da-bd82-44993dd31b26",
+  "versionId": "13840f63-abc1-4d6c-b534-36efca150753",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "21460e016f8b7f31f241379a885a02b777ce2c6345f0719a583ba0765f1a98b7"
